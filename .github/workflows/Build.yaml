@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - develop
+      - feature/*
+      - bugfix/*
+      - hotfix/*
+      - release/*
+      - ci/*
   pull_request:
 
 concurrency:
@@ -16,10 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    permissions:
-      contents: read
-      pull-requests: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -30,17 +31,20 @@ jobs:
           distribution: 'zulu'
           java-version: 17
 
+      - name: Ensure gradlew is executable
+        run: chmod +x ./gradlew
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Run assembleDebug
+      - name: Build project
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Run lint checks
-        run: ./gradlew lintDebug --no-daemon --stacktrace
+        run: ./gradlew lint --no-daemon --stacktrace
 
       - name: Run local unit tests
-        run: ./gradlew testDebugUnitTest --no-daemon --stacktrace
+        run: ./gradlew test testDebugUnitTest --no-daemon --stacktrace
 
       # Upload lint report if lint fails
       - name: Upload Lint Reports
